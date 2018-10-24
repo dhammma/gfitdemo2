@@ -1,6 +1,8 @@
 package com.dmitriisalenko.gfitdemo2.gfitdemo2;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;
@@ -12,9 +14,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private GoogleFitManager mGoogleFitManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +51,10 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        mGoogleFitManager = new GoogleFitManager(this);
+
+        refreshMainContentLayout();
     }
 
     @Override
@@ -97,5 +112,64 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == mGoogleFitManager.PERMISSION_REQUEST_CODE) {
+            refreshMainContentLayout();
+            mGoogleFitManager.connectGoogleFitCompleted();
+
+            if (resultCode == RESULT_OK) {
+                Logger.log("Google fit connected ok");
+            } else {
+                GoogleSignIn.getSignedInAccountFromIntent(data)
+                    .addOnSuccessListener(new OnSuccessListener<GoogleSignInAccount>() {
+                        @Override
+                        public void onSuccess(GoogleSignInAccount googleSignInAccount) {
+                            Logger.log("Get account +" + googleSignInAccount.getDisplayName());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Logger.log("Failure get account");
+                        }
+                    });
+                Logger.log("Google fit connected failure " + Integer.toString(resultCode));
+            }
+        }
+    }
+
+    //
+    // BLOCK START: handlers
+    //
+
+    public void connectGoogleFit(View m) {
+        mGoogleFitManager.connectGoogleFit();
+    }
+
+    public void disconnectGoogleFit(View m) {
+        mGoogleFitManager.disconnectGoogleFit();
+    }
+
+    // BLOCK END
+
+    // BLOCK START: render
+
+    public void refreshMainContentLayout() {
+        TextView statusTextView = findViewById(R.id.statusTextView);
+        Button connectGoogleFitButton = findViewById(R.id.connectGoogleFitButton);
+        Button disconnectGoogleFitButton = findViewById(R.id.disconnectGoogleFitButton);
+
+        if (mGoogleFitManager.hasPermissions()) {
+            statusTextView.setText("Google Fit is connected");
+            connectGoogleFitButton.setVisibility(View.GONE);
+            disconnectGoogleFitButton.setVisibility(View.VISIBLE);
+        } else {
+            statusTextView.setText("Google Fit is not connected");
+            connectGoogleFitButton.setVisibility(View.VISIBLE);
+            disconnectGoogleFitButton.setVisibility(View.GONE);
+        }
     }
 }
