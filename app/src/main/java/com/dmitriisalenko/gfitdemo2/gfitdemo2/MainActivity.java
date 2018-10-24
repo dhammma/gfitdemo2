@@ -1,5 +1,6 @@
 package com.dmitriisalenko.gfitdemo2.gfitdemo2;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -74,6 +75,8 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+//            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+
             super.onBackPressed();
         }
     }
@@ -106,7 +109,11 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        Fragment fragment = null;
+
+        if (id == R.id.nav_activities) {
+            fragment = new ActivitiesFragment();
+        } else if (id == R.id.nav_camera) {
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
 
@@ -117,6 +124,14 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
+
+        }
+
+        if (fragment != null) {
+            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+            fragmentTransaction
+                    .replace(R.id.contentFrame, fragment)
+                    .commit();
 
         }
 
