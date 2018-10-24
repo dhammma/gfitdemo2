@@ -32,6 +32,23 @@ final public class GoogleFitManager {
                 .build();
     }
 
+    private void subscribeToFitnessData() {
+        Fitness.getRecordingClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity))
+                .subscribe(DataType.TYPE_ACTIVITY_SAMPLES)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Logger.log("Subscribe to fitness data ok");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Logger.log("Subscribe to fitness data failure " + e.getMessage());
+                    }
+                });
+    }
+
     //
     // BLOCK START: public methods list
     //
@@ -58,6 +75,10 @@ final public class GoogleFitManager {
 
     public void connectGoogleFitCompleted() {
         processingConnect = false;
+
+        if (hasPermissions()) {
+            subscribeToFitnessData();
+        }
     }
 
     public void disconnectGoogleFit() {
@@ -66,8 +87,6 @@ final public class GoogleFitManager {
         }
 
         processingConnect = true;
-
-        Logger.log("Test");
 
         Fitness.getConfigClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity))
                 .disableFit()
