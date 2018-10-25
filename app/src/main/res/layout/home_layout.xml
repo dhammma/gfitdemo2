@@ -4,10 +4,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:text="HomeLayout"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_centerInParent="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/statusTextView"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50sp"
+            android:text="status text" />
+
+        <Button
+            android:id="@+id/connectGoogleFitButton"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="connectGoogleFit"
+            android:text="Connect Google Fit" />
+
+        <Button
+            android:id="@+id/disconnectGoogleFitButton"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="disconnectGoogleFit"
+            android:text="Disconnect Google Fit" />
+
+    </LinearLayout>
 
 </RelativeLayout>

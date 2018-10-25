@@ -1,6 +1,5 @@
 package com.dmitriisalenko.gfitdemo2.gfitdemo2;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -17,8 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -29,6 +26,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private GoogleFitManager mGoogleFitManager;
+    private LayoutFragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +36,10 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         if (savedInstanceState == null) {
-            Fragment homeFragment = new HomeFragment();
+            mFragment = new HomeFragment();
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
             fragmentTransaction
-                    .add(R.id.contentFrame, homeFragment)
+                    .add(R.id.contentFrame, mFragment)
                     .addToBackStack(null)
                     .commit();
         }
@@ -109,10 +107,8 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        Fragment fragment = null;
-
         if (id == R.id.nav_activities) {
-            fragment = new ActivitiesFragment();
+            mFragment = new ActivitiesFragment();
         } else if (id == R.id.nav_camera) {
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
@@ -127,10 +123,10 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        if (fragment != null) {
+        if (mFragment != null) {
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
             fragmentTransaction
-                    .replace(R.id.contentFrame, fragment)
+                    .replace(R.id.contentFrame, mFragment)
                     .commit();
 
         }
@@ -167,6 +163,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // BLOCK START: public methods
+    //
+    //
+    public GoogleFitManager getGoogleFitManager() {
+        return mGoogleFitManager;
+    }
+
     //
     // BLOCK START: handlers
     //
@@ -184,18 +187,8 @@ public class MainActivity extends AppCompatActivity
     // BLOCK START: render
 
     public void refreshMainContentLayout() {
-        TextView statusTextView = findViewById(R.id.statusTextView);
-        Button connectGoogleFitButton = findViewById(R.id.connectGoogleFitButton);
-        Button disconnectGoogleFitButton = findViewById(R.id.disconnectGoogleFitButton);
-
-        if (mGoogleFitManager.hasPermissions()) {
-            statusTextView.setText("Google Fit is connected");
-            connectGoogleFitButton.setVisibility(View.GONE);
-            disconnectGoogleFitButton.setVisibility(View.VISIBLE);
-        } else {
-            statusTextView.setText("Google Fit is not connected");
-            connectGoogleFitButton.setVisibility(View.VISIBLE);
-            disconnectGoogleFitButton.setVisibility(View.GONE);
+        if (mFragment != null) {
+            mFragment.refreshLayout();
         }
     }
 }

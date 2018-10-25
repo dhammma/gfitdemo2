@@ -9,11 +9,18 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 final public class GoogleFitManager {
     private Activity mActivity;
@@ -28,6 +35,7 @@ final public class GoogleFitManager {
 
     private FitnessOptions getFitnessOptions() {
         return FitnessOptions.builder()
+                .addDataType(DataType.TYPE_ACTIVITY_SEGMENT)
                 .addDataType(DataType.TYPE_ACTIVITY_SAMPLES)
                 .build();
     }
@@ -117,6 +125,36 @@ final public class GoogleFitManager {
                             }
                         });
 //                        ((MainActivity) mActivity).refreshMainContentLayout();
+                    }
+                });
+    }
+
+    public void readActivitiesSamples() {
+        Calendar calendar = Calendar.getInstance();
+        Date now = new Date();
+        calendar.setTime(now);
+        long endTime = calendar.getTimeInMillis();
+        calendar.add(Calendar.MONTH, -1);
+        long startTime = calendar.getTimeInMillis();
+
+        DataReadRequest request = new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_ACTIVITY_SEGMENT, DataType.TYPE_ACTIVITY_SAMPLES)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+
+        Fitness.getHistoryClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity))
+                .readData(request)
+                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                    @Override
+                    public void onSuccess(DataReadResponse dataReadResponse) {
+                        Logger.log("Read data success");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Logger.log("Read data failure " + e.getMessage());
                     }
                 });
     }
