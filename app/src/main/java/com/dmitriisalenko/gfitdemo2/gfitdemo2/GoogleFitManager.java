@@ -35,6 +35,7 @@ final public class GoogleFitManager {
 
     private FitnessOptions getFitnessOptions() {
         return FitnessOptions.builder()
+                .addDataType(DataType.AGGREGATE_ACTIVITY_SUMMARY)
                 .addDataType(DataType.TYPE_ACTIVITY_SEGMENT)
                 .addDataType(DataType.TYPE_ACTIVITY_SAMPLES)
                 .build();
@@ -138,7 +139,7 @@ final public class GoogleFitManager {
         long startTime = calendar.getTimeInMillis();
 
         DataReadRequest request = new DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_ACTIVITY_SEGMENT, DataType.TYPE_ACTIVITY_SAMPLES)
+                .aggregate(DataType.TYPE_ACTIVITY_SEGMENT, DataType.AGGREGATE_ACTIVITY_SUMMARY)
                 .bucketByTime(1, TimeUnit.DAYS)
                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                 .build();
@@ -149,6 +150,7 @@ final public class GoogleFitManager {
                     @Override
                     public void onSuccess(DataReadResponse dataReadResponse) {
                         Logger.log("Read data success");
+                        Logger.log(dataReadResponse.getBuckets().toString());
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
