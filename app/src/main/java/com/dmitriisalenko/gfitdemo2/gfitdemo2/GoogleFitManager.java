@@ -3,14 +3,22 @@ package com.dmitriisalenko.gfitdemo2.gfitdemo2;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.FitnessActivities;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.data.Bucket;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.data.Value;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -18,8 +26,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 final public class GoogleFitManager {
@@ -35,14 +47,34 @@ final public class GoogleFitManager {
 
     private FitnessOptions getFitnessOptions() {
         return FitnessOptions.builder()
-                .addDataType(DataType.AGGREGATE_ACTIVITY_SUMMARY)
+                // STEPS
+                .addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                .addDataType(DataType.TYPE_STEP_COUNT_CADENCE)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
+
+                // CYCLING
+                .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE)
+                .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE)
+                .addDataType(DataType.TYPE_CYCLING_WHEEL_REVOLUTION)
+                .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM)
+
+                // DISTANCE
+                .addDataType(DataType.TYPE_DISTANCE_CUMULATIVE)
+                .addDataType(DataType.TYPE_DISTANCE_DELTA)
+                .addDataType(DataType.AGGREGATE_DISTANCE_DELTA)
+
+                // ACTIVITIES
                 .addDataType(DataType.TYPE_ACTIVITY_SEGMENT)
                 .addDataType(DataType.TYPE_ACTIVITY_SAMPLES)
+                .addDataType(DataType.AGGREGATE_ACTIVITY_SUMMARY)
+
                 .build();
     }
 
     private void subscribeToFitnessData() {
         Fitness.getRecordingClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity))
+
                 .subscribe(DataType.TYPE_ACTIVITY_SAMPLES)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -130,7 +162,7 @@ final public class GoogleFitManager {
                 });
     }
 
-    public void readActivitiesSamples() {
+    public void readActivitiesSamples(final OnSuccessListener<String> onSuccessListener, final OnFailureListener onFailureListener) {
         Calendar calendar = Calendar.getInstance();
         Date now = new Date();
         calendar.setTime(now);
@@ -151,12 +183,81 @@ final public class GoogleFitManager {
                     public void onSuccess(DataReadResponse dataReadResponse) {
                         Logger.log("Read data success");
                         Logger.log(dataReadResponse.getBuckets().toString());
+                        DateFormat dateFormat = DateFormat.getDateInstance();
+
+                        String result;
+
+                        if (dataReadResponse.getStatus().isSuccess()) {
+                            if (dataReadResponse.getBuckets().size() > 0) {
+                                result = "";
+                                for (Bucket bucket : dataReadResponse.getBuckets()) {
+
+                                    List<DataSet> dataSets = bucket.getDataSets();
+                                    result += "\n\n\nActivity: " + bucket.getActivity();
+                                    Logger.log("getFitHistoryByTime: Activity " + bucket.getActivity());
+                                    result += "\nStart - End: " + dateFormat.format(bucket.getStartTime(TimeUnit.MILLISECONDS))
+                                            + " - "
+                                            + dateFormat.format(bucket.getEndTime(TimeUnit.MILLISECONDS));
+                                    Logger.log("getFitHistoryByTime: Start - End  "
+                                            + dateFormat.format(bucket.getStartTime(TimeUnit.MILLISECONDS))
+                                            + " - "
+                                            + dateFormat.format(bucket.getEndTime(TimeUnit.MILLISECONDS)));
+                                    for (DataSet dataSet : dataSets) {
+                                        Logger.log("Data returned for Data type: " + dataSet.getDataType().getName());
+                                        for (DataPoint dp : dataSet.getDataPoints()) {
+
+                                            if (dp.getDataType().equals(DataType.AGGREGATE_ACTIVITY_SUMMARY)) {
+                                                boolean activityToAdd = false;
+                                                for (Field field : dp.getDataType().getFields()) {
+                                                    if (Field.FIELD_ACTIVITY.equals(field)) {
+                                                        String activityType = dp.getValue(field).asActivity();
+                                                        result += "\n\nActivity Type: " + activityType;
+                                                        Logger.log("getFitHistoryByTime: activity type " + activityType);
+
+                                                        Logger.log("getFitHistoryByTime: added activity: " + activityType);
+
+                                                    }
+
+                                                    Value value = dp.getValue(field);
+                                                    switch (field.getFormat()) {
+                                                        case Field.FORMAT_FLOAT:
+                                                            result += "\nfield " + field.getName() + ": " + Float.toString(value.asFloat());
+                                                            Logger.log("field " + field.getName() + ": " + Float.toString(value.asFloat()));
+                                                            break;
+                                                        case Field.FORMAT_INT32:
+                                                            result += "\nfield " + field.getName() + ": " + Integer.toString(value.asInt());
+                                                            Logger.log("field " + field.getName() + ": " + Integer.toString(value.asInt()));
+                                                            break;
+                                                        case Field.FORMAT_STRING:
+                                                            result += "\nfield " + field.getName() + ": " + value.asString();
+                                                            Logger.log("field " + field.getName() + ": " + value.asString());
+                                                            break;
+                                                        case Field.FORMAT_MAP:
+                                                            result += "\nfield " + field.getName() + ": " + value.asString();
+                                                            Logger.log("field " + field.getName() + ": " + value.asString());
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                onSuccessListener.onSuccess(result);
+                                return;
+                            }
+                        }
+
+                        onSuccessListener.onSuccess("No data");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Logger.log("Read data failure " + e.getMessage());
+                        onFailureListener.onFailure(e);
                     }
                 });
     }
