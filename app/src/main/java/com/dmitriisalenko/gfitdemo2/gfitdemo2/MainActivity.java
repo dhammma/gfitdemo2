@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_activities) {
             mFragment = new ActivitiesFragment();
         } else if (id == R.id.nav_camera) {
-            // Handle the camera action
+            mFragment = new DistancessFragment();
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {

@@ -279,5 +279,36 @@ final public class GoogleFitManager {
                 });
     }
 
+    public void readDistancesData(OnSuccessListener<String> onSuccessListener, OnFailureListener onFailureListener) {
+        Calendar calendar = Calendar.getInstance();
+        Date now = new Date();
+        calendar.setTime(now);
+        long endTime = calendar.getTimeInMillis();
+        calendar.add(Calendar.MONTH, -1);
+        long startTime = calendar.getTimeInMillis();
+
+        DataReadRequest request = new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_DISTANCE_DELTA, DataType.AGGREGATE_DISTANCE_DELTA)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+
+        Fitness.getHistoryClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity))
+                .readData(request)
+                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                    @Override
+                    public void onSuccess(DataReadResponse dataReadResponse) {
+                        Logger.log("Read data success");
+                        Logger.log(dataReadResponse.getBuckets().toString());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Logger.log("Read data failure " + e.getMessage());
+                    }
+                });
+    }
+
     // BLOCK END
 }
