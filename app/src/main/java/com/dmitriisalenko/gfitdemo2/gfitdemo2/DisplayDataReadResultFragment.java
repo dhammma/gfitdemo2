@@ -1,7 +1,6 @@
 package com.dmitriisalenko.gfitdemo2.gfitdemo2;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,14 +10,17 @@ import android.widget.TextView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-public class DistancessFragment extends LayoutFragment {
-    String result = "";
+abstract public class DisplayDataReadResultFragment extends LayoutFragment {
+    private String result = "";
+
+    public abstract String getType();
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceBundle) {
-        ((MainActivity) getActivity()).getGoogleFitManager().readDistancesData(
-                new OnSuccessListener<String>() {
+        getGoogleFitManager().readData(
+                getType(),
+                new OnSuccessListener<String>(){
                     @Override
                     public void onSuccess(String s) {
                         result = s;
@@ -27,20 +29,20 @@ public class DistancessFragment extends LayoutFragment {
                 },
                 new OnFailureListener() {
                     @Override
-                    public void onFailure(@NonNull Exception e) {
+                    public void onFailure(Exception e) {
                         result = e.getMessage();
                         refreshLayout();
                     }
                 }
         );
-        return inflater.inflate(R.layout.distances_layout, container, false);
+        return inflater.inflate(R.layout.display_data_read_result_layout, container, false);
     }
 
     @Override
     public void refreshLayout() {
         if (getView() != null) {
-            ((TextView) getView().findViewById(R.id.distancesTextView))
-                    .setText(result);
+            TextView resultTextView = getView().findViewById(R.id.data_read_result);
+            resultTextView.setText(result);
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.dmitriisalenko.gfitdemo2.gfitdemo2;
 
-public class ActivitiesFragment extends DisplayDataReadResultFragment {
+public class DistancesFragment extends DisplayDataReadResultFragment {
     @Override
     public String getType() {
-        return "activities";
+        return "distances";
     }
 }

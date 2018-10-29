@@ -294,5 +294,18 @@ final public class GoogleFitManager {
         );
     }
 
+    public void readData(String type, OnSuccessListener<String> onSuccessListener, OnFailureListener onFailureListener) {
+        switch (type) {
+            case "activities":
+                readActivitiesSamples(onSuccessListener, onFailureListener);
+                break;
+            case "distances":
+                readActivitiesSamples(onSuccessListener, onFailureListener);
+                break;
+            default:
+                break;
+        }
+    }
+
     // BLOCK END
 }
