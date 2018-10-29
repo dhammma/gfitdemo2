@@ -1,6 +1,5 @@
 package com.dmitriisalenko.gfitdemo2.gfitdemo2;
 
-import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
@@ -109,7 +108,7 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_activities) {
             mFragment = new ActivitiesFragment();
-        } else if (id == R.id.nav_camera) {
+        } else if (id == R.id.nav_distances) {
             mFragment = new DistancessFragment();
         } else if (id == R.id.nav_gallery) {
 

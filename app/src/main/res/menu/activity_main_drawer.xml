@@ -10,9 +10,9 @@
             android:title="Activities"
         />
         <item
-            android:id="@+id/nav_camera"
+            android:id="@+id/nav_distances"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:title="Distances" />
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
