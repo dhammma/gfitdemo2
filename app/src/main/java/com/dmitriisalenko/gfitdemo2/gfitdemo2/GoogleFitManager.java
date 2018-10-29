@@ -12,6 +12,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessActivities;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.RecordingClient;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
@@ -28,9 +29,12 @@ import com.google.android.gms.tasks.Task;
 
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -45,49 +49,62 @@ final public class GoogleFitManager {
         mActivity = activity;
     }
 
+    Vector<DataType> getDataTypes() {
+        Vector<DataType> dataTypes = new Vector<>();
+
+        // STEPS
+        dataTypes.add(DataType.TYPE_STEP_COUNT_CUMULATIVE);
+        dataTypes.add(DataType.TYPE_STEP_COUNT_DELTA);
+        dataTypes.add(DataType.TYPE_STEP_COUNT_CADENCE);
+        dataTypes.add(DataType.AGGREGATE_STEP_COUNT_DELTA);
+
+        // CYCLING
+        dataTypes.add(DataType.TYPE_CYCLING_PEDALING_CADENCE);
+        dataTypes.add(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE);
+        dataTypes.add(DataType.TYPE_CYCLING_WHEEL_REVOLUTION);
+        dataTypes.add(DataType.TYPE_CYCLING_WHEEL_RPM);
+
+        // DISTANCE
+        dataTypes.add(DataType.TYPE_DISTANCE_CUMULATIVE);
+        dataTypes.add(DataType.TYPE_DISTANCE_DELTA);
+        dataTypes.add(DataType.AGGREGATE_DISTANCE_DELTA);
+
+        // ACTIVITIES
+        dataTypes.add(DataType.TYPE_ACTIVITY_SEGMENT);
+        dataTypes.add(DataType.TYPE_ACTIVITY_SAMPLES);
+        dataTypes.add(DataType.AGGREGATE_ACTIVITY_SUMMARY);
+
+        return dataTypes;
+    }
+
     private FitnessOptions getFitnessOptions() {
-        return FitnessOptions.builder()
-                // STEPS
-                .addDataType(DataType.TYPE_STEP_COUNT_CUMULATIVE)
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                .addDataType(DataType.TYPE_STEP_COUNT_CADENCE)
-                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
+        FitnessOptions.Builder fitnessOptionsBuilder = FitnessOptions.builder();
 
-                // CYCLING
-                .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE)
-                .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE)
-                .addDataType(DataType.TYPE_CYCLING_WHEEL_REVOLUTION)
-                .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM)
+        for (DataType dt : getDataTypes()) {
+            fitnessOptionsBuilder.addDataType(dt);
+        }
 
-                // DISTANCE
-                .addDataType(DataType.TYPE_DISTANCE_CUMULATIVE)
-                .addDataType(DataType.TYPE_DISTANCE_DELTA)
-                .addDataType(DataType.AGGREGATE_DISTANCE_DELTA)
-
-                // ACTIVITIES
-                .addDataType(DataType.TYPE_ACTIVITY_SEGMENT)
-                .addDataType(DataType.TYPE_ACTIVITY_SAMPLES)
-                .addDataType(DataType.AGGREGATE_ACTIVITY_SUMMARY)
-
-                .build();
+        return fitnessOptionsBuilder.build();
     }
 
     private void subscribeToFitnessData() {
-        Fitness.getRecordingClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity))
+        RecordingClient recordingClient = Fitness.getRecordingClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity));
 
-                .subscribe(DataType.TYPE_ACTIVITY_SAMPLES)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Logger.log("Subscribe to fitness data ok");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Logger.log("Subscribe to fitness data failure " + e.getMessage());
-                    }
-                });
+        for (final DataType dt : getDataTypes()) {
+            recordingClient.subscribe(dt)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Logger.log("Subscribe to " + dt.getName() + " ok");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Logger.log("Subscribe to " + dt.getName() + " is failure");
+                        }
+                    });
+        }
     }
 
     //
