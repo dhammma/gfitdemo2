@@ -19,7 +19,7 @@ import java.util.Vector;
 
 final public class GoogleFitManager {
     private Activity mActivity;
-    private GoogleFitFactory mGoogleFitFactory;
+    private GoogleFitHelper mGoogleFitFactory;
 
     private boolean processingConnect = false;
 
@@ -27,7 +27,7 @@ final public class GoogleFitManager {
 
     public GoogleFitManager(Activity activity) {
         mActivity = activity;
-        mGoogleFitFactory = new GoogleFitFactory(this);
+        mGoogleFitFactory = new GoogleFitHelper(this);
     }
 
     public Activity getActivity() {

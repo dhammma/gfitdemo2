@@ -24,10 +24,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class GoogleFitFactory {
+public class GoogleFitHelper {
     GoogleFitManager mGoogleFitManager;
 
-    public GoogleFitFactory(GoogleFitManager googleFitManager) {
+    public GoogleFitHelper(GoogleFitManager googleFitManager) {
         mGoogleFitManager = googleFitManager;
     }
 
