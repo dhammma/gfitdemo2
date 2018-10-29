@@ -125,7 +125,10 @@ public class GoogleFitHelper {
     public String getDataSetData(DataSet dataSet) {
         String result = "";
 
-        if (dataSet.getDataPoints().size() > 0) {
+        List<DataPoint> reverseDataPoints = new ArrayList<>(dataSet.getDataPoints());
+        Collections.reverse(reverseDataPoints);
+
+        if (reverseDataPoints.size() > 0) {
             for (DataPoint dataPoint : dataSet.getDataPoints()) {
                 String dataPointData = getDataPointData(dataPoint);
 
