@@ -61,6 +61,26 @@ public class GoogleFitHelper {
         return result;
     }
 
+    public String getDistanceValue(Value value) {
+        return Double.toString(Math.floor(value.asFloat() * 100) / 100) + "m";
+    }
+
+    public String getActivityValue(Value value) {
+        return value.asActivity();
+    }
+
+    public String getDurationValue(Value value) {
+        int intValue = value.asInt() / 1000;
+
+        if (intValue < 60) {
+            return Integer.toString(intValue) + "s";
+        } else if (intValue < 3600) {
+            return Integer.toString(intValue / 60) + "m";
+        } else {
+            return Integer.toString(intValue / 3600) + "h";
+        }
+    }
+
     public String getDataPointData(DataPoint dataPoint) {
         String result = "";
 
@@ -80,7 +100,15 @@ public class GoogleFitHelper {
 
             String stringValue = "";
 
-            if (field.getFormat() == Field.FORMAT_FLOAT) {
+            Logger.log(field.getName() + ": " + field.getFormat());
+
+            if (field.getName().equals("distance")) {
+                stringValue = getDistanceValue(originalValue);
+            } else if (field.getName().equals("activity")) {
+                stringValue = getActivityValue(originalValue);
+            } else if (field.getName().equals("duration")) {
+                stringValue = getDurationValue(originalValue);
+            } else if (field.getFormat() == Field.FORMAT_FLOAT) {
                 stringValue = Float.toString(originalValue.asFloat());
             } else if (field.getFormat() == Field.FORMAT_INT32) {
                 stringValue = Integer.toString(originalValue.asInt());
