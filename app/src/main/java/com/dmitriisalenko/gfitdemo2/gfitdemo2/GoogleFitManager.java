@@ -180,109 +180,17 @@ final public class GoogleFitManager {
                                 ((MainActivity) mActivity).refreshMainContentLayout();
                             }
                         });
-//                        ((MainActivity) mActivity).refreshMainContentLayout();
                     }
                 });
     }
 
-    public void readActivitiesSamples(final OnSuccessListener<String> onSuccessListener, final OnFailureListener onFailureListener) {
-        Calendar calendar = Calendar.getInstance();
-        Date now = new Date();
-        calendar.setTime(now);
-        long endTime = calendar.getTimeInMillis();
-        calendar.add(Calendar.MONTH, -1);
-        long startTime = calendar.getTimeInMillis();
-
-        DataReadRequest request = new DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_ACTIVITY_SEGMENT, DataType.AGGREGATE_ACTIVITY_SUMMARY)
-                .bucketByTime(1, TimeUnit.DAYS)
-                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                .build();
-
-        Fitness.getHistoryClient(mActivity, GoogleSignIn.getLastSignedInAccount(mActivity))
-                .readData(request)
-                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
-                    @Override
-                    public void onSuccess(DataReadResponse dataReadResponse) {
-                        Logger.log("Read data success");
-                        Logger.log(dataReadResponse.getBuckets().toString());
-                        DateFormat dateFormat = DateFormat.getDateInstance();
-
-                        String result;
-
-                        if (dataReadResponse.getStatus().isSuccess()) {
-                            if (dataReadResponse.getBuckets().size() > 0) {
-                                result = "";
-                                for (Bucket bucket : dataReadResponse.getBuckets()) {
-
-                                    List<DataSet> dataSets = bucket.getDataSets();
-                                    result += "\n\n\nActivity: " + bucket.getActivity();
-                                    Logger.log("getFitHistoryByTime: Activity " + bucket.getActivity());
-                                    result += "\nStart - End: " + dateFormat.format(bucket.getStartTime(TimeUnit.MILLISECONDS))
-                                            + " - "
-                                            + dateFormat.format(bucket.getEndTime(TimeUnit.MILLISECONDS));
-                                    Logger.log("getFitHistoryByTime: Start - End  "
-                                            + dateFormat.format(bucket.getStartTime(TimeUnit.MILLISECONDS))
-                                            + " - "
-                                            + dateFormat.format(bucket.getEndTime(TimeUnit.MILLISECONDS)));
-                                    for (DataSet dataSet : dataSets) {
-                                        Logger.log("Data returned for Data type: " + dataSet.getDataType().getName());
-                                        for (DataPoint dp : dataSet.getDataPoints()) {
-
-                                            if (dp.getDataType().equals(DataType.AGGREGATE_ACTIVITY_SUMMARY)) {
-                                                boolean activityToAdd = false;
-                                                for (Field field : dp.getDataType().getFields()) {
-                                                    if (Field.FIELD_ACTIVITY.equals(field)) {
-                                                        String activityType = dp.getValue(field).asActivity();
-                                                        result += "\n\nActivity Type: " + activityType;
-                                                        Logger.log("getFitHistoryByTime: activity type " + activityType);
-
-                                                        Logger.log("getFitHistoryByTime: added activity: " + activityType);
-
-                                                    }
-
-                                                    Value value = dp.getValue(field);
-                                                    switch (field.getFormat()) {
-                                                        case Field.FORMAT_FLOAT:
-                                                            result += "\nfield " + field.getName() + ": " + Float.toString(value.asFloat());
-                                                            Logger.log("field " + field.getName() + ": " + Float.toString(value.asFloat()));
-                                                            break;
-                                                        case Field.FORMAT_INT32:
-                                                            result += "\nfield " + field.getName() + ": " + Integer.toString(value.asInt());
-                                                            Logger.log("field " + field.getName() + ": " + Integer.toString(value.asInt()));
-                                                            break;
-                                                        case Field.FORMAT_STRING:
-                                                            result += "\nfield " + field.getName() + ": " + value.asString();
-                                                            Logger.log("field " + field.getName() + ": " + value.asString());
-                                                            break;
-                                                        case Field.FORMAT_MAP:
-                                                            result += "\nfield " + field.getName() + ": " + value.asString();
-                                                            Logger.log("field " + field.getName() + ": " + value.asString());
-                                                            break;
-                                                        default:
-                                                            break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                onSuccessListener.onSuccess(result);
-                                return;
-                            }
-                        }
-
-                        onSuccessListener.onSuccess("No data");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Logger.log("Read data failure " + e.getMessage());
-                        onFailureListener.onFailure(e);
-                    }
-                });
+    public void readActivitiesSamples(OnSuccessListener<String> onSuccessListener, OnFailureListener onFailureListener) {
+        mGoogleFitFactory.readData(
+                DataType.TYPE_ACTIVITY_SEGMENT,
+                DataType.AGGREGATE_ACTIVITY_SUMMARY,
+                onSuccessListener,
+                onFailureListener
+        );
     }
 
     public void readDistancesData(OnSuccessListener<String> onSuccessListener, OnFailureListener onFailureListener) {
@@ -300,7 +208,7 @@ final public class GoogleFitManager {
                 readActivitiesSamples(onSuccessListener, onFailureListener);
                 break;
             case "distances":
-                readActivitiesSamples(onSuccessListener, onFailureListener);
+                readDistancesData(onSuccessListener, onFailureListener);
                 break;
             default:
                 break;
