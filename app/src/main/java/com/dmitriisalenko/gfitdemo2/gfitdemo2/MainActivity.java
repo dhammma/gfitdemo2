@@ -110,8 +110,8 @@ public class MainActivity extends AppCompatActivity
             mFragment = new ActivitiesFragment();
         } else if (id == R.id.nav_distances) {
             mFragment = new DistancesFragment();
-        } else if (id == R.id.nav_gallery) {
-
+        } else if (id == R.id.nav_steps) {
+            mFragment = new StepsFragment();
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {

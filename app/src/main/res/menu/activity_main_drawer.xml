@@ -5,6 +5,10 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_steps"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="Steps" />
+        <item
             android:id="@+id/nav_activities"
             android:icon="@drawable/ic_menu_camera"
             android:title="Activities"
@@ -13,10 +17,6 @@
             android:id="@+id/nav_distances"
             android:icon="@drawable/ic_menu_camera"
             android:title="Distances" />
-        <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"
