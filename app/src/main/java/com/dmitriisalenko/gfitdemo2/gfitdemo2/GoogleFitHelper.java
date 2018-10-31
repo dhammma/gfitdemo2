@@ -196,6 +196,11 @@ public class GoogleFitHelper {
         Calendar calendar = Calendar.getInstance();
         Date now =  new Date();
         calendar.setTime(now);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
         long endTime = calendar.getTimeInMillis();
         calendar.add(Calendar.MONTH, -1);
         long startTime = calendar.getTimeInMillis();
@@ -207,7 +212,7 @@ public class GoogleFitHelper {
 
             readRequest = new DataReadRequest.Builder()
                     .aggregate(dataSource, aggregateType)
-                    .bucketByTime(12, TimeUnit.HOURS)
+                    .bucketByTime(24, TimeUnit.HOURS)
                     .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                     .build();
         } else {
