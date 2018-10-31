@@ -18,9 +18,9 @@
             android:icon="@drawable/ic_menu_camera"
             android:title="Distances" />
         <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/nav_steps_google_fit"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:title="Google Fit Steps" />
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"

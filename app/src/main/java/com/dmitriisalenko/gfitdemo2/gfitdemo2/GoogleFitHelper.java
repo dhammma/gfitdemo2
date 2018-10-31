@@ -8,6 +8,7 @@ import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Value;
@@ -144,7 +145,7 @@ public class GoogleFitHelper {
     public String getBucketData(Bucket bucket) {
         String result = "";
 
-        DateFormat dateFormat = DateFormat.getDateInstance();
+        DateFormat dateFormat = DateFormat.getDateTimeInstance();
 
         String startDate = dateFormat.format(bucket.getStartTime(TimeUnit.MILLISECONDS));
         String endDate = dateFormat.format(bucket.getEndTime(TimeUnit.MILLISECONDS));
@@ -173,6 +174,65 @@ public class GoogleFitHelper {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         onFailure(e);
+                    }
+                });
+    }
+
+    public void readGoogleFitStepsData(final OnSuccessListener<String> onSuccessListener, final OnFailureListener onFailureListener) {
+        DataSource dataSource = new DataSource.Builder()
+                .setAppPackageName("com.google.android.gms")
+                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                .setType(DataSource.TYPE_DERIVED)
+                .setStreamName("estimated_steps")
+                .build();
+
+        List<DataType> aggregatedDataTypeList = DataType.getAggregatesForInput(dataSource.getDataType());
+
+        Logger.log("readGoogleFitStepsData");
+        Logger.log(aggregatedDataTypeList.toString());
+
+//        onSuccessListener.onSuccess(aggregatedDataTypeList.toString());
+
+        Calendar calendar = Calendar.getInstance();
+        Date now =  new Date();
+        calendar.setTime(now);
+        long endTime = calendar.getTimeInMillis();
+        calendar.add(Calendar.MONTH, -1);
+        long startTime = calendar.getTimeInMillis();
+
+        DataReadRequest readRequest;
+
+        if (aggregatedDataTypeList.size() > 0) {
+            DataType aggregateType = aggregatedDataTypeList.get(0);
+
+            readRequest = new DataReadRequest.Builder()
+                    .aggregate(dataSource, aggregateType)
+                    .bucketByTime(12, TimeUnit.HOURS)
+                    .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .build();
+        } else {
+            readRequest = new DataReadRequest.Builder()
+                    .read(dataSource)
+                    .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                    .build();
+        }
+
+        Fitness.getHistoryClient(mGoogleFitManager.getActivity(), GoogleSignIn.getLastSignedInAccount(mGoogleFitManager.getActivity()))
+                .readData(readRequest)
+                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                    @Override
+                    public void onSuccess(DataReadResponse dataReadResponse) {
+                        String result = getBucketsData(dataReadResponse.getBuckets());
+                        Logger.log("okay");
+                        Logger.log(result);
+                        onSuccessListener.onSuccess(result);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Logger.log("failure " + e.getMessage());
+                        onFailureListener.onFailure(e);
                     }
                 });
     }

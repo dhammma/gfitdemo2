@@ -190,6 +190,10 @@ final public class GoogleFitManager {
         );
     }
 
+    public void readGoogleFitStepsData(OnSuccessListener<String> onSuccessListener, OnFailureListener onFailureListener) {
+        mGoogleFitFactory.readGoogleFitStepsData(onSuccessListener, onFailureListener);
+    }
+
     public void readData(String type, OnSuccessListener<String> onSuccessListener, OnFailureListener onFailureListener) {
         switch (type) {
             case "activities":
@@ -201,6 +205,8 @@ final public class GoogleFitManager {
             case "steps":
                 readStepsData(onSuccessListener, onFailureListener);
                 break;
+            case "google_fit_steps":
+                readGoogleFitStepsData(onSuccessListener, onFailureListener);
             default:
                 break;
         }

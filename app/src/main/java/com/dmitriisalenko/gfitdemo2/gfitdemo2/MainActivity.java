@@ -112,8 +112,8 @@ public class MainActivity extends AppCompatActivity
             mFragment = new DistancesFragment();
         } else if (id == R.id.nav_steps) {
             mFragment = new StepsFragment();
-        } else if (id == R.id.nav_slideshow) {
-
+        } else if (id == R.id.nav_steps_google_fit) {
+            mFragment = new GoogleFitStepsFragment();
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
